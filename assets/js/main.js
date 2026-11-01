@@ -143,7 +143,7 @@ function renderHeader(active) {
     <div class="navbar">
       <div class="container navbar-in">
         <a href="index.html" class="logo" aria-label="${SITE.name} trang chủ">
-          <span class="logo-mark" aria-hidden="true"><i></i></span>
+          <img class="logo-img" src="assets/img/brand/logo.webp" width="242" height="240" alt="">
           <span class="logo-text">${SITE.name}</span>
         </a>
         <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav">Menu</button>
@@ -190,7 +190,7 @@ function renderFooter() {
   document.getElementById("site-footer").innerHTML = `
     <div class="container footer-grid">
       <div>
-        <a href="index.html" class="logo logo-light"><span class="logo-mark" aria-hidden="true"><i></i></span><span class="logo-text">${SITE.name}</span></a>
+        <a href="index.html" class="logo logo-light"><span class="logo-badge"><img class="logo-img" src="assets/img/brand/logo.webp" width="242" height="240" alt=""></span><span class="logo-text">${SITE.name}</span></a>
         <p class="footer-about">Phân phối thiết bị vision, robot cộng tác và tích hợp giải pháp tự động hóa cho nhà máy.</p>
       </div>
       <div>

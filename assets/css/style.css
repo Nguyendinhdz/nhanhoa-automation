@@ -76,10 +76,11 @@ p { margin: 0 0 1em; }
 
 .logo { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 800; font-size: 1.2rem; letter-spacing: .02em; }
 .logo:hover { color: var(--ink); }
-.logo-mark { width: 30px; height: 30px; border: 2.5px solid var(--steel); border-radius: 50%; position: relative; display: inline-block; }
-.logo-mark i { position: absolute; inset: 7px; border-radius: 50%; background: var(--amber); }
+.logo-img { width: 52px; height: 52px; object-fit: contain; flex: none; display: block; }
+.logo-badge { width: 64px; height: 64px; border-radius: 50%; background: var(--white); display: grid; place-items: center; flex: none; }
+.logo-badge .logo-img { width: 54px; height: 54px; }
 .logo-light, .logo-light:hover { color: var(--white); }
-.logo-light .logo-mark { border-color: var(--white); }
+.logo-light .logo-text { font-size: 1.15rem; }
 
 .main-nav { display: flex; align-items: center; gap: 4px; }
 .nav-link { color: var(--ink); font-weight: 500; padding: 24px 14px; display: block; position: relative; }
