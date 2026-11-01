@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kiến thức kỹ thuật – {SITE}</title>
+  <meta name="description" content="Bài viết kỹ thuật về chiếu sáng vision, kiểm tra ngoại quan, camera 3D và robot.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <div class="page-head">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Trang chủ</a> / Kiến thức</div>
+        <h1>Kiến thức kỹ thuật</h1>
+        <p>Chiếu sáng, kiểm tra ngoại quan, camera 3D và robot, viết từ kinh nghiệm triển khai thực tế.</p>
+        <nav class="sol-nav" id="tag-nav" aria-label="Lọc theo chủ đề"></nav>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="container">
+        <div class="agrid" id="alist"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer" class="site-footer"></footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/sentech.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/articles.js"></script>
+  <script>
+    initPage("articles");
+
+    const tags = [...new Set(ARTICLES.flatMap((a) => a.tags))];
+    let current = new URLSearchParams(location.search).get("tag") || "";
+
+    function render() {
+      document.getElementById("tag-nav").innerHTML =
+        [`<a href="#" data-tag="" class="${!current ? "is-active" : ""}">Tất cả</a>`]
+          .concat(tags.map((t) => `<a href="#" data-tag="${t}" class="${current === t ? "is-active" : ""}">${t}</a>`)).join("");
+      const list = ARTICLES
+        .filter((a) => !current || a.tags.includes(current))
+        .sort((a, b) => b.date.localeCompare(a.date));
+      document.getElementById("alist").innerHTML = list.map(articleCard).join("");
+    }
+
+    document.getElementById("tag-nav").addEventListener("click", (e) => {
+      const a = e.target.closest("[data-tag]"); if (!a) return;
+      e.preventDefault(); current = a.dataset.tag; render();
+    });
+    render();
+  </script>
+</body>
+</html>

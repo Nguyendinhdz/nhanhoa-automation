@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Giải pháp – {SITE}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <div class="page-head">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Trang chủ</a> / Giải pháp</div>
+        <h1>Giải pháp tự động hóa</h1>
+        <p>Thiết bị vision và robot được ghép thành giải pháp hoàn chỉnh, tích hợp với PLC và hệ thống sẵn có của nhà máy.</p>
+        <nav class="sol-nav" id="sol-nav" aria-label="Chọn giải pháp"></nav>
+      </div>
+    </div>
+
+    <div class="container" id="sol-list"></div>
+
+    <section class="cta">
+      <div class="container cta-in">
+        <div>
+          <h2>Bài toán của bạn chưa có ở đây?</h2>
+          <p>Mô tả công đoạn và gửi ảnh mẫu, chúng tôi đề xuất phương án trong 2–3 ngày làm việc.</p>
+        </div>
+        <a href="bao-gia.html#lien-he" class="btn btn-amber">Gửi yêu cầu</a>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer" class="site-footer"></footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/sentech.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    initPage("solutions");
+
+    document.getElementById("sol-nav").innerHTML =
+      SOLUTIONS.map((s) => `<a href="#${s.id}">${s.name}</a>`).join("");
+
+    document.getElementById("sol-list").innerHTML = SOLUTIONS.map((s) => {
+      const items = s.stack.map((pid) => PRODUCTS.find((p) => p.id === pid)).filter(Boolean);
+      return `
+        <article class="sol-block" id="${s.id}">
+          <div class="sol-visual ${s.image ? "has-img" : ""}">${s.image ? `<img src="${s.image}" alt="${s.name}" loading="lazy">` : iconSVG(s.icon)}</div>
+          <div>
+            <h2>${s.name}</h2>
+            <p class="lead">${s.short}</p>
+            <p>${s.detail}</p>
+            ${s.features ? `<ul class="feature-list">${s.features.map((f) => `<li>${f}</li>`).join("")}</ul>` : ""}
+            ${s.video ? `<div style="margin:20px 0">${videoEmbed(s.video, s.name)}</div>` : ""}
+            <h3 style="margin-top:22px">${s.link ? "Thiết bị hỗ trợ" : "Thiết bị trong giải pháp"}</h3>
+            <ul class="stack-list">
+              ${items.map((p) => `<li><a href="chi-tiet.html?id=${p.id}">${p.name}<span>${brandName(p.brand)}</span></a></li>`).join("")}
+            </ul>
+            <div class="hero-actions" style="margin-top:0">
+              ${s.link ? `<a class="btn btn-amber" href="${s.link}">${s.linkText || "Xem chi tiết"}</a>` : ""}
+              <button class="btn ${s.link ? "btn-ghost" : "btn-primary"}" data-add-set="${s.id}">Thêm cả bộ vào báo giá</button>
+            </div>
+          </div>
+        </article>`;
+    }).join("");
+
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-add-set]"); if (!b) return;
+      const s = SOLUTIONS.find((x) => x.id === b.dataset.addSet);
+      s.stack.forEach((pid) => Quote.add(pid));
+    });
+  </script>
+</body>
+</html>

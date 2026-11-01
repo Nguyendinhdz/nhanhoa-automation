@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bài viết – {SITE}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main id="article-root"></main>
+
+  <section class="cta">
+    <div class="container cta-in">
+      <div>
+        <h2>Muốn thử kỹ thuật này với sản phẩm của bạn?</h2>
+        <p>Gửi mẫu có lỗi và không lỗi, chúng tôi chụp thử và gửi lại ảnh so sánh.</p>
+      </div>
+      <a href="bao-gia.html#lien-he" class="btn btn-amber">Gửi mẫu chụp thử</a>
+    </div>
+  </section>
+
+  <footer id="site-footer" class="site-footer"></footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/sentech.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/articles.js"></script>
+  <script>
+    initPage("articles");
+
+    const id = new URLSearchParams(location.search).get("id");
+    const a = ARTICLES.find((x) => x.id === id);
+    const root = document.getElementById("article-root");
+
+    if (!a) {
+      root.innerHTML = `<div class="container section"><h1>Không tìm thấy bài viết</h1><p>Bài viết có thể đã được đổi đường dẫn.</p><a class="btn btn-primary" href="kien-thuc.html">Xem tất cả bài viết</a></div>`;
+    } else {
+      document.title = a.title + " – " + SITE.name;
+      const related = (a.related || []).map((pid) => PRODUCTS.find((p) => p.id === pid)).filter(Boolean);
+      const others = ARTICLES.filter((x) => x.id !== a.id).slice(0, 2);
+
+      root.innerHTML = `
+        <div class="container article-head">
+          <div class="crumbs"><a href="index.html">Trang chủ</a> / <a href="kien-thuc.html">Kiến thức</a></div>
+          <p class="acard-meta">${articleDate(a.date)} · ${a.tags.join(", ")}</p>
+          <h1>${a.title}</h1>
+        </div>
+        <figure class="container article-cover">
+          <div style="background:${a.coverBg || "var(--paper)"}" class="${a.coverFit === "cover" ? "is-cover" : ""}"><img src="${a.cover}" alt="${a.title}" referrerpolicy="no-referrer" onerror="this.closest('figure').remove()"></div>
+          ${a.coverCredit ? `<figcaption>${a.coverCredit}</figcaption>` : ""}
+        </figure>
+        <div class="container article-layout">
+          <article class="prose">${a.body}${a.source ? `<p class="article-source">Nguồn: <a href="${a.source.url}" target="_blank" rel="noopener">${a.source.name}</a>. Số liệu theo công bố của hãng.</p>` : ""}</article>
+          <aside class="article-side">
+            ${related.length ? `<h3>Thiết bị liên quan</h3><ul class="stack-list">${related.map((p) => `<li><a href="chi-tiet.html?id=${p.id}">${p.name}<span>${brandName(p.brand)}</span></a></li>`).join("")}</ul>` : ""}
+            <a href="bao-gia.html#lien-he" class="btn btn-primary" style="width:100%">Hỏi kỹ sư</a>
+          </aside>
+        </div>
+        ${others.length ? `<section class="section section-alt"><div class="container"><div class="section-head"><h2>Bài viết khác</h2></div><div class="agrid">${others.map(articleCard).join("")}</div></div></section>` : ""}`;
+    }
+  </script>
+</body>
+</html>

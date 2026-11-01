@@ -1,0 +1,11 @@
+# Tài liệu gốc (catalogue PDF, ảnh chụp gốc) - không đưa lên web công khai
+tailieu/
+
+# Script phụ, không cần cho web
+*.ps1
+
+# File của VS Code / hệ điều hành
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store

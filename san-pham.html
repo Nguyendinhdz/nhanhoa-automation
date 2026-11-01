@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sản phẩm – {SITE}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <div class="page-head">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Trang chủ</a> / <span id="crumb">Sản phẩm</span></div>
+        <h1 id="page-title">Tất cả sản phẩm</h1>
+        <p id="page-desc">Lọc theo danh mục hoặc hãng, thêm sản phẩm vào danh sách để nhận báo giá.</p>
+      </div>
+    </div>
+
+    <div class="container shop">
+      <aside class="filters" id="filters" aria-label="Bộ lọc">
+        <div class="f-group">
+          <h4>Danh mục</h4>
+          <ul class="f-list" id="f-cats"></ul>
+        </div>
+        <div class="f-group">
+          <h4>Hãng</h4>
+          <div id="f-brands"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="f-reset">Xóa bộ lọc</button>
+      </aside>
+
+      <section>
+        <div class="shop-bar">
+          <div class="search">
+            <input type="search" id="q" placeholder="Tìm theo tên, ví dụ: FH-5553, UR12e, đèn dome" aria-label="Tìm sản phẩm">
+          </div>
+          <button class="btn btn-ghost btn-sm filter-toggle" id="filter-toggle">Bộ lọc</button>
+          <span class="result-count" id="count"></span>
+        </div>
+        <div class="pgrid" id="grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="site-footer"></footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/sentech.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    initPage("products");
+
+    const params = new URLSearchParams(location.search);
+    const state = {
+      cat: params.get("cat") || "",
+      sub: params.get("sub") || "",
+      brands: params.get("brand") ? params.get("brand").split(",") : [],
+      q: params.get("q") || "",
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function renderFilters() {
+      const all = `<li><button class="f-btn ${!state.cat ? "is-active" : ""}" data-cat="">Tất cả <small>${PRODUCTS.length}</small></button></li>`;
+      $("f-cats").innerHTML = all + CATEGORIES.map((c) => {
+        const n = PRODUCTS.filter((p) => p.cat === c.id).length;
+        const open = state.cat === c.id;
+        const subs = open ? `<ul class="f-sub">${c.children.map((s) => {
+          const m = PRODUCTS.filter((p) => p.sub === s.id).length;
+          return `<li><button class="f-btn ${state.sub === s.id ? "is-active" : ""}" data-cat="${c.id}" data-sub="${s.id}">${s.name} <small>${m}</small></button></li>`;
+        }).join("")}</ul>` : "";
+        return `<li><button class="f-btn ${open && !state.sub ? "is-active" : ""}" data-cat="${c.id}">${c.name} <small>${n}</small></button>${subs}</li>`;
+      }).join("");
+
+      $("f-brands").innerHTML = BRANDS.map((b) => `
+        <label class="f-check"><input type="checkbox" value="${b.id}" ${state.brands.includes(b.id) ? "checked" : ""}> ${b.name}</label>`).join("");
+    }
+
+    function renderGrid() {
+      const q = state.q.trim().toLowerCase();
+      const list = PRODUCTS.filter((p) =>
+        (!state.cat || p.cat === state.cat) &&
+        (!state.sub || p.sub === state.sub) &&
+        (!state.brands.length || state.brands.includes(p.brand)) &&
+        (!q || (p.name + " " + p.short + " " + brandName(p.brand)).toLowerCase().includes(q))
+      );
+
+      $("grid").innerHTML = list.length
+        ? list.map(productCard).join("")
+        : `<div class="empty">Không có sản phẩm khớp bộ lọc. <button class="btn btn-ghost btn-sm" onclick="resetAll()">Xóa bộ lọc</button> hoặc <a href="bao-gia.html#lien-he">hỏi kỹ sư</a> về sản phẩm bạn cần.</div>`;
+      $("count").textContent = `${list.length} sản phẩm`;
+
+      // tiêu đề trang theo bộ lọc
+      let title = "Tất cả sản phẩm", desc = "Lọc theo danh mục hoặc hãng, thêm sản phẩm vào danh sách để nhận báo giá.";
+      if (state.cat) {
+        const c = CATEGORIES.find((c) => c.id === state.cat);
+        title = state.sub ? subName(state.cat, state.sub) : c.name;
+        desc = c.desc;
+      } else if (state.brands.length === 1) {
+        const b = BRANDS.find((b) => b.id === state.brands[0]);
+        title = "Sản phẩm " + b.name; desc = b.note;
+      }
+      $("page-title").textContent = title;
+      $("page-desc").textContent = desc;
+      $("crumb").textContent = title;
+    }
+
+    function syncURL() {
+      const p = new URLSearchParams();
+      if (state.cat) p.set("cat", state.cat);
+      if (state.sub) p.set("sub", state.sub);
+      if (state.brands.length) p.set("brand", state.brands.join(","));
+      if (state.q) p.set("q", state.q);
+      history.replaceState(null, "", "san-pham.html" + (p.toString() ? "?" + p : ""));
+    }
+
+    function update() { renderFilters(); renderGrid(); syncURL(); }
+
+    function resetAll() { Object.assign(state, { cat: "", sub: "", brands: [], q: "" }); $("q").value = ""; update(); }
+
+    $("f-cats").addEventListener("click", (e) => {
+      const b = e.target.closest(".f-btn"); if (!b) return;
+      state.cat = b.dataset.cat; state.sub = b.dataset.sub || ""; update();
+    });
+    $("f-brands").addEventListener("change", () => {
+      state.brands = [...document.querySelectorAll("#f-brands input:checked")].map((i) => i.value); update();
+    });
+    $("q").value = state.q;
+    $("q").addEventListener("input", (e) => { state.q = e.target.value; renderGrid(); syncURL(); });
+    $("f-reset").addEventListener("click", resetAll);
+    $("filter-toggle").addEventListener("click", () => $("filters").classList.toggle("open"));
+
+    update();
+  </script>
+</body>
+</html>

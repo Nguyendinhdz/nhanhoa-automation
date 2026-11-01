@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Yêu cầu báo giá – {SITE}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <div class="page-head">
+      <div class="container">
+        <div class="crumbs"><a href="index.html">Trang chủ</a> / Báo giá & liên hệ</div>
+        <h1>Yêu cầu báo giá</h1>
+        <p>Kiểm tra danh sách sản phẩm, điền thông tin, chúng tôi gửi báo giá qua email hoặc Zalo.</p>
+      </div>
+    </div>
+
+    <div class="container quote-wrap">
+      <section aria-labelledby="list-title">
+        <h2 id="list-title" style="font-size:1.4rem">Danh sách sản phẩm</h2>
+        <div id="qlist"></div>
+      </section>
+
+      <section class="form" id="lien-he" aria-labelledby="form-title">
+        <h2 id="form-title">Thông tin liên hệ</h2>
+        <form id="qform" novalidate>
+          <div class="field-row">
+            <div class="field">
+              <label for="f-name">Họ tên <span class="req">*</span></label>
+              <input id="f-name" name="name" required autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="f-company">Công ty</label>
+              <input id="f-company" name="company" autocomplete="organization">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="f-phone">Điện thoại / Zalo <span class="req">*</span></label>
+              <input id="f-phone" name="phone" type="tel" required autocomplete="tel">
+            </div>
+            <div class="field">
+              <label for="f-email">Email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email">
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-type">Bạn cần</label>
+            <select id="f-type" name="type">
+              <option>Báo giá thiết bị</option>
+              <option>Tư vấn giải pháp / chụp thử mẫu</option>
+              <option>Dịch vụ OMRON Vision (setup / custom software)</option>
+              <option>Hỗ trợ kỹ thuật</option>
+              <option>Khác</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-msg">Mô tả yêu cầu</label>
+            <textarea id="f-msg" name="message" rows="5" placeholder="Ví dụ: kiểm tra vết xước trên vỏ nhôm, tốc độ 60 sp/phút, cần tín hiệu OK/NG về PLC"></textarea>
+          </div>
+          <p id="f-error" class="req" hidden></p>
+          <button class="btn btn-primary" type="submit">Gửi yêu cầu báo giá</button>
+          <div id="f-ok" class="form-ok" hidden></div>
+        </form>
+
+        <div class="contact-box" id="contact-box"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="site-footer"></footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/sentech.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script>
+    initPage("contact");
+
+    const $ = (id) => document.getElementById(id);
+
+    function renderList() {
+      const list = Quote.get();
+      if (!list.length) {
+        $("qlist").innerHTML = `<div class="empty">Danh sách đang trống. Bạn vẫn có thể gửi yêu cầu ở form bên cạnh, hoặc <a href="san-pham.html">chọn sản phẩm</a> trước.</div>`;
+        return;
+      }
+      $("qlist").innerHTML = `
+        <table class="qtable">
+          <thead><tr><th>Sản phẩm</th><th style="width:130px">Số lượng</th><th style="width:60px"></th></tr></thead>
+          <tbody>
+            ${list.map((i) => {
+              const p = findQuoteItem(i.id);
+              if (!p) return "";
+              return `<tr>
+                <td><div class="q-name"><span class="q-thumb">${productImage(p)}</span>
+                  <span><a href="chi-tiet.html?id=${p.seriesId || p.id}">${p.name}</a><br><small style="color:var(--muted)">${p.seriesName || brandName(p.brand)}</small></span></div></td>
+                <td><div class="qty">
+                  <button type="button" data-dec="${p.id}" aria-label="Giảm">−</button>
+                  <input type="number" min="1" value="${i.qty}" data-qty="${p.id}" aria-label="Số lượng ${p.name}">
+                  <button type="button" data-inc="${p.id}" aria-label="Tăng">+</button></div></td>
+                <td><button class="q-remove" data-remove="${p.id}">Xóa</button></td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+        <p style="margin-top:14px"><button class="btn btn-ghost btn-sm" id="clear">Xóa tất cả</button>
+        <a class="btn btn-ghost btn-sm" href="san-pham.html">Thêm sản phẩm khác</a></p>`;
+    }
+
+    $("qlist").addEventListener("click", (e) => {
+      const t = e.target;
+      const get = (id) => (Quote.get().find((i) => i.id === id) || { qty: 1 }).qty;
+      if (t.dataset.inc) Quote.setQty(t.dataset.inc, get(t.dataset.inc) + 1);
+      else if (t.dataset.dec) Quote.setQty(t.dataset.dec, get(t.dataset.dec) - 1);
+      else if (t.dataset.remove) Quote.remove(t.dataset.remove);
+      else if (t.id === "clear") Quote.clear();
+      else return;
+      renderList();
+    });
+    $("qlist").addEventListener("change", (e) => {
+      if (e.target.dataset.qty) { Quote.setQty(e.target.dataset.qty, +e.target.value || 1); renderList(); }
+    });
+
+    $("contact-box").innerHTML = `
+      <div><strong>Hotline</strong><a href="tel:${SITE.phone.replace(/\s/g, "")}">${SITE.phone}</a></div>
+      <div><strong>Email</strong><a href="mailto:${SITE.email}">${SITE.email}</a></div>
+      <div><strong>Địa chỉ</strong>${SITE.address}</div>`;
+
+    /* Gửi form — bản demo chưa có máy chủ.
+       Giai đoạn sau: gửi về API/email (Formspree, EmailJS hoặc backend riêng). */
+    $("qform").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const name = f.name.value.trim(), phone = f.phone.value.trim();
+      if (!name || !phone) {
+        $("f-error").textContent = "Vui lòng nhập họ tên và số điện thoại để chúng tôi liên hệ lại.";
+        $("f-error").hidden = false;
+        (name ? f.phone : f.name).focus();
+        return;
+      }
+      $("f-error").hidden = true;
+
+      const items = Quote.get().map((i) => {
+        const p = findQuoteItem(i.id);
+        return p ? `- ${p.name} (${brandName(p.brand)}) x ${i.qty}` : "";
+      }).filter(Boolean);
+
+      const body = [
+        `Họ tên: ${name}`, `Công ty: ${f.company.value}`, `Điện thoại: ${phone}`, `Email: ${f.email.value}`,
+        `Nhu cầu: ${f.type.value}`, "", "Sản phẩm:", ...(items.length ? items : ["(chưa chọn)"]), "", "Mô tả:", f.message.value,
+      ].join("\n");
+
+      console.log("YÊU CẦU BÁO GIÁ\n" + body); // xem trong DevTools khi test
+
+      const mailto = `mailto:${SITE.email}?subject=${encodeURIComponent("Yêu cầu báo giá - " + name)}&body=${encodeURIComponent(body)}`;
+      $("f-ok").innerHTML = `Đã ghi nhận yêu cầu của <b>${name}</b>. (Bản demo chưa nối máy chủ — <a href="${mailto}">gửi qua email</a> để thử.)`;
+      $("f-ok").hidden = false;
+    });
+
+    // Đến từ trang Dịch vụ OMRON Vision: chọn sẵn loại yêu cầu
+    if (new URLSearchParams(location.search).get("dv") === "omron") {
+      $("f-type").value = "Dịch vụ OMRON Vision (setup / custom software)";
+      $("f-msg").placeholder = "Ví dụ: cần setup FH-5553 kiểm tra 2 camera, kết nối PLC qua EtherNet/IP; hoặc cần phần mềm lưu ảnh NG và báo cáo theo ca";
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
